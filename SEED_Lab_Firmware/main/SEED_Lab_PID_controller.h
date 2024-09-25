@@ -4,8 +4,8 @@
 class PID_control{
 
     private:
-        float desired_left_vel;
-        float desired_right_vel;
+        float desired_left_pos, desired_right_pos;
+        float desired_left_vel, desired_right_vel;
 
     public:
         float get_right_vel();
