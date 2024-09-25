@@ -219,6 +219,7 @@ void console_print(long current_time)
   }
 }
 
+// This is the given code for the PID controller portion
 void pwm_controller(){
   for(i=0;i<2;i++) {
   pos_error[i] = desired_pos[i] - actual_pos[i];
@@ -229,14 +230,36 @@ void pwm_controller(){
   }
 }
 
+// This is the function to take in the signal from the Rasberry Pi and set a desired position
 void find_desired_pos(){
   long read_pos[2] = {0};
-  =  analogRead(rasberryPiInput);
-
+  read_pos =  analogRead(rasberryPiInput);
+  left_motor_desired_pos = read_pos(0);
+  right_motor_desired_pos = read_pos(1);
 }
 
+// This is the funciton that will take in the given desired position and find a desired velocity for the motor
+void motor_PID_controller(long desired_pos, long measured_pos){
+  long pos_error  = subtractor(desired_pos, measured_pos);
+  long integral_error = integral_error + pos_error*((float)desired_Ts_ms /1000);
+  desired_velocity = Kp_pos * pos_error + Ki_pos * integral_error;
+}
+
+// This is the function that will take the desired velocity and set the voltage for the motors to meet that velocity
+void motor_Velocity_controller(long desired_velocity, long measured_velocity){
+  long vel_error = desired_velocity - measured_velocity;
+  motor_voltage = Kp*vel_error;
+  if(motor_voltage < 0){
+    motor_dir = 0
+    motor_voltage = -motor_voltage; // set it positive
+  }
+  else{motor_dir = 1;}
+}
+
+// This is the uncompleted position controller
 void left_motor_pos_controller(){
   pos_error subtractor(long left_in, long bottom_in);
+  
 }
 
 void left_motor_vel()
