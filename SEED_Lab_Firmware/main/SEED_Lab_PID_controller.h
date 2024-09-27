@@ -4,13 +4,15 @@
 class PID_control{
 
     private:
-        float desired_left_pos, desired_right_pos;
-        float desired_left_vel, desired_right_vel;
+        float desired_left_vel;
+        float desired_right_vel;
+        
 
     public:
-        float get_right_vel();
-        void set_right_vel(long *desired_pos, long *measured_pos, float *desired_velocity);
-        
+        float get_des_vel(int motor_num);
+        void set_right_vel(long *desired_pos, float measured_pos = get_wheel_pos(1), float *desired_right_vel);
+        void set_right_vel(long *desired_pos, float measured_pos = get_wheel_pos(2), float *desired_left_vel);
+
 };
 
 
