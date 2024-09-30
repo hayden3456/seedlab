@@ -5,6 +5,7 @@ from time import sleep
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import board
 import threading
+import queue
 
 aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
 camera = cv2.VideoCapture(0) # Initialize the camera
@@ -12,22 +13,26 @@ camera = cv2.VideoCapture(0) # Initialize the camera
 # Initialize SMBus library with I2C bus 1
 i2c = board.I2C()
 
+q = queue.Queue()
+
 #initialize lcd screen
 lcd_columns = 16
 lcd_rows = 2
 lcd = character_lcd.Character_LCD_RGB_I2C(i2c, lcd_columns, lcd_rows)
 lcd.color = [100, 0, 0] #red
 
+#initializing quadrants displayed
 y_start_point = (318,0)
 y_end_point = (318,600)
 x_start_point = (0, 240)
 x_end_point = (650, 240)
 
-output = [0,0]
-
+output = [0,0] #initiliaze coordinate array
+#color and thickness for coordinate lines
 color = (0,255, 0)
 thickness = 5
-center = (0,0)
+
+center = (0,0) #initialize array to store location of center of QR code
 
 def LCDHandler(x_avg, y_avg):
     if ((x_avg<318)&(y_avg<240)):
@@ -45,7 +50,10 @@ def LCDHandler(x_avg, y_avg):
         
     lcd.clear()
     lcd.message = "Desired Location:\n" + str(output) #print QR code id on LCD screen
-    
+    #sleep(.1)
+
+myThread = threading.Thread(target=LCDHandler, args=(x_avg, y_avg))
+myThread.start()
 
 while(True):
     ret,frame = camera.read() # Take an image
@@ -63,9 +71,6 @@ while(True):
         center = (int(x_avg),int(y_avg))
         
         frame = cv2.circle(frame,center,10,color,thickness)
-
-        myThread = threading.Thread(target=LCDHandler, args=(x_avg, y_avg))
-        myThread.start()
         
         
     frame = cv2.line(frame, y_start_point, y_end_point, color, thickness)
@@ -78,6 +83,3 @@ while(True):
 camera.release()
 cv2.destroyAllWindows() #clear camera if user hits q
 lcd.clear()
-
-
-
