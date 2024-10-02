@@ -41,7 +41,7 @@ center = (0,0) #initialize array to store location of center of QR code
 def LCDHandler():
     
     while True:
-        if not q.empty():
+        if not q.empty(): #if there is something in the queue, read it
             gotSomething = q.get()
             print(gotSomething)
             
@@ -51,11 +51,10 @@ def LCDHandler():
             i2c_board.write_byte_data(ARD_ADDR,1, gotSomething[0])#address,register, value,boolean
             sleep(0.1)
             i2c_board.write_byte_data(ARD_ADDR,1, gotSomething[1])
-            
             sleep(.01)
 
 myThread = threading.Thread(target=LCDHandler, args=())
-myThread.start()
+myThread.start() #always run thread in the background
 
 while(True):
     ret,frame = camera.read() # Take an image
@@ -87,12 +86,12 @@ while(True):
             output[0] = 1
             output[1] = 1
         
-        if temp != output:
+        if temp != output: #if there has been a change to the location of the QR code put the coordinates on the queue
             q.put(output)
             
-        center = (int(x_avg),int(y_avg))
+        center = (int(x_avg),int(y_avg)) #find the center of the QR code
         
-        frame = cv2.circle(frame,center,10,(255,0,0),thickness)
+        frame = cv2.circle(frame,center,10,(255,0,0),thickness) #add a small circle at the center of the QR code
         
     frame = cv2.line(frame, y_start_point, y_end_point, color, thickness)
     frame = cv2.line(frame, x_start_point, x_end_point, color, thickness)
