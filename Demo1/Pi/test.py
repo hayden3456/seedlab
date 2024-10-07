@@ -15,16 +15,9 @@ def rotation_vector_to_euler_angles(rvec):
     
     # Calculate Euler angles (in radians)
     sy = np.sqrt(rotation_matrix[0, 0]**2 + rotation_matrix[1, 0]**2)
-
-    singular = sy < 1e-6
-    if not singular:
-        x = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
-        y = np.arctan2(-rotation_matrix[2, 0], sy)
-        z = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
-    else:
-        x = np.arctan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
-        y = np.arctan2(-rotation_matrix[2, 0], sy)
-        z = 0
+    x = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
+    y = np.arctan2(-rotation_matrix[2, 0], sy)
+    z = np.arctan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
     
     # Convert from radians to degrees
     return np.degrees([x, y, z])
@@ -33,7 +26,7 @@ def rotation_vector_to_euler_angles(rvec):
 input_video = cv2.VideoCapture(0)
 
 # Read the camera parameters from the file
-camera_matrix, dist_coeffs = read_camera_parameters("tutorial_camera_params.yml")
+camera_matrix, dist_coeffs = read_camera_parameters("generic_camera_params.yml")
 
 # Load the predefined dictionary for marker detection
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)
