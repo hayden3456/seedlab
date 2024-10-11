@@ -29,7 +29,7 @@ objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
 
-images = glob.glob('cameraCalibration/images/*.png')
+images = glob.glob('/home/seedlab/github/Demo1/Pi*.png')
 
 for image in images:
 

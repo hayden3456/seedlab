@@ -26,7 +26,7 @@ def rotation_vector_to_euler_angles(rvec):
 input_video = cv2.VideoCapture(0)
 
 # Read the camera parameters from the file
-camera_matrix, dist_coeffs = read_camera_parameters("generic_camera_params.yml")
+camera_matrix, dist_coeffs = read_camera_parameters("test.yml")
 
 # Load the predefined dictionary for marker detection
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)

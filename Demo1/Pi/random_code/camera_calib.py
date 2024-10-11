@@ -50,5 +50,6 @@ if objpoints and imgpoints:
     print("\nDistortion coefficients: \n", dist)
     print("\nRotation vector: \n", rvecs)
     print("\nTranslation vector: \n", tvecs)
+    print(len(images))
 else:
     print("Not enough points for calibration.")
