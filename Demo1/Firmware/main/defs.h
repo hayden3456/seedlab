@@ -1,6 +1,6 @@
 /**
   * @file defs.h
-  * @author Luca Ciancanelli
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
   *
   * @brief Header file for program defines
   */
@@ -8,9 +8,9 @@
 #ifndef defs_h
 #define defs_h
 
-// Robot defines
-#define WHEEL_RADIUS 7.5 // This is the radius of the wheel in centimeters
-#define WHEEL_WIDTH 35 // This is the distance between the wheels in centimeters
+// Robot defines (cm)
+#define WHEEL_RADIUS 7.5 
+#define WHEEL_WIDTH 35
 
 // Software defines
 // Main defines
@@ -41,6 +41,7 @@
 // Velocity controller
 #define KP_VEL_LEFT 4
 #define KP_VEL_RIGHT 4
+
 #define OUTPUT_CAP_LEFT 127
 #define OUTPUT_CAP_RIGHT 117
 
@@ -69,6 +70,7 @@
 #define LEFT_MOTOR_SPEED 9
 #define RIGHT_MOTOR_SPEED 10
 
-// Thanks Arduino IDE
+// Blank value for previously deleted file (thanks Arduino IDE)
 #define VEL_KP 0
+
 #endif

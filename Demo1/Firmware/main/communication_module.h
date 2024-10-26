@@ -1,6 +1,6 @@
 /**
   * @file communication_module.h
-  * @author Luca Ciancanelli
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
   *
   * @brief Header file for the communication module
   */
@@ -25,4 +25,5 @@ class comm_mod
 
     void print_params(long current_time);
 };
+
 #endif

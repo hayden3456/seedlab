@@ -1,6 +1,6 @@
 /**
   * @file localization_module.h
-  * @author Luca Ciancanelli
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
   *
   * @brief Header file for the localization module
   */

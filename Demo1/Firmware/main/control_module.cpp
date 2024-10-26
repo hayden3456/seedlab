@@ -1,35 +1,65 @@
+/**
+  * @file control_module.cpp
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
+  *
+  * @brief Source file for the localization module
+  */
+
 #include "control_module.h"
 #include "defs.h"
 
+// Create control module pointer and set to null pointer
 cont_mod* cont_mod::cont_mod_ptr = nullptr;
-// This is the Constructor Function
+
+/**
+  * @brief Control module constructor
+  */
 cont_mod::cont_mod()
 {
   
 }
-// This is the Destructor Function
+
+/**
+  * @brief Control module destructor
+  */
 cont_mod::~cont_mod()
 {
 
 }
-// This function creates the pointer for the class for each different motor
+
+/**
+  * @brief Gets instance of control module
+  *
+  * @return Control module pointer
+  */
 cont_mod* cont_mod::get_instance()
 {
+  // Check if control module is instantiated
   if(cont_mod_ptr == nullptr)
   {
+    // Create new instance of control module
     cont_mod_ptr = new cont_mod();
   }
 
   return cont_mod_ptr;
 }
-// This function deletes the pointers for the class for each different motor
+
+/**
+  * @brief Deallocates memory used for control module
+  */
 void cont_mod::clean_up()
 {
+  // Check if control module is instantiated
   if(cont_mod_ptr == nullptr)
   {
+    // End cleanup if no control mdoule exists
     return;
   }
+
+  // Delete control module instance
   delete cont_mod_ptr;
+
+  // Set control module pointer to null pointer
   cont_mod_ptr = nullptr;
 }
 
@@ -38,6 +68,9 @@ void cont_mod::clean_up()
   *
   * @param desired_vel Desired wheel velocity
   * @param measured_vel Measured wheel velocity
+  * @param kp Proportional gain
+  * @param integral_vel Current velocity integral pointer
+  * @param output_cap Velocity cap
   * @return Motor pwm
   */
 int cont_mod::get_motor_pwm(float desired_vel, float measured_vel, float kp, float *integral_vel, int output_cap)
@@ -45,13 +78,15 @@ int cont_mod::get_motor_pwm(float desired_vel, float measured_vel, float kp, flo
   // Calculate velocity error
   float vel_error = desired_vel - measured_vel;
 
-  // Integrate velocity error
+  // Integrate velocity error (if velocity cap is not exceeded)
   if(*integral_vel + kp * vel_error < output_cap)
   {
+    // Integrate velocity error
     *integral_vel += kp * vel_error;
   }
   else
   {
+    // Set velocity to output cap
     *integral_vel = output_cap;
   }
   
@@ -64,6 +99,8 @@ int cont_mod::get_motor_pwm(float desired_vel, float measured_vel, float kp, flo
   *
   * @param desired_pos Desired wheel position
   * @param current_pos Current wheel position
+  * @param kp Proportional gain
+  * @param ki Integral gain
   * @param integral_error Current integrator error pointer
   * @return Desired wheel velocity (rad/s)
   */
@@ -104,9 +141,7 @@ void cont_mod::update_motor_pwms()
 }
 
 /**
-  * @brief Sets desired left wheel position
-  *
-  * @return Set desired Left wheel position (rad)
+  * @brief Sets left wheel desired position (rad)
   */
 void cont_mod::set_left_desired_pos(float pos)
 {
@@ -114,9 +149,7 @@ void cont_mod::set_left_desired_pos(float pos)
 }
 
 /**
-  * @brief Sets right desired position (rad)
-  *
-  * @return Set desired Right wheel position (rad)
+  * @brief Sets right wheel desired position (rad)
   */
 void cont_mod::set_right_desired_pos(float pos)
 {
@@ -124,9 +157,7 @@ void cont_mod::set_right_desired_pos(float pos)
 }
 
 /**
-  * @brief Sets left wheel velocity
-  *
-  * @return Set desired Left wheel velocity (rad/sec)
+  * @brief Sets left wheel desired velocity (rad/sec)
   */
 void cont_mod::set_left_desired_vel(float vel)
 {
@@ -134,9 +165,7 @@ void cont_mod::set_left_desired_vel(float vel)
 }
 
 /**
-  * @brief Sets right wheel velocity
-  *
-  * @return Set desired Right wheel velocity (rad/sec)
+  * @brief Sets right wheel desired velocity (rad/sec)
   */
 void cont_mod::set_right_desired_vel(float vel)
 {
@@ -164,9 +193,9 @@ int cont_mod::get_right_pwm()
 }
 
 /**
-  * @brief Gets left wheel velocity
+  * @brief Gets left wheel desired position
   *
-  * @return Left wheel position (rad)
+  * @return Left wheel desired position (rad)
   */
 float cont_mod::get_left_desired_pos()
 {
@@ -174,9 +203,9 @@ float cont_mod::get_left_desired_pos()
 }
 
 /**
-  * @brief Gets right wheel velocity
+  * @brief Gets right wheel desired position
   *
-  * @return Right wheel position (rad)
+  * @return Right wheel desired position (rad)
   */
 float cont_mod::get_right_desired_pos()
 {

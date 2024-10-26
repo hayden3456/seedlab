@@ -1,44 +1,73 @@
+/**
+  * @file localization_module.cpp
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
+  *
+  * @brief Source file for the localization module
+  */
+
 #include "localization_module.h"
 #include "defs.h"
 
+// Create localization module pointer and set to null pointer
 loc_mod* loc_mod::loc_mod_ptr = nullptr;
 
-// This is the Contructor Function
+/**
+  * @brief Localization module constructor
+  */
 loc_mod::loc_mod()
 {
+  // Create new encoder instances and assign them to encoder pointer members
   left_enc = new Encoder(LEFT_MOTOR_INPUT_A, LEFT_MOTOR_INPUT_B);
   right_enc = new Encoder(RIGHT_MOTOR_INPUT_A, RIGHT_MOTOR_INPUT_B);
 }
 
-// This is the Destructor Function
+/**
+  * @brief Localization module destructor
+  */
 loc_mod::~loc_mod()
 {
+  // Deallocate memory storing encoder objects
   delete left_enc;
   delete right_enc;
 
+  // Set encoder pointer members to null pointers
   left_enc = nullptr;
   right_enc = nullptr;
 }
 
-// This function creates a version of the class that will be called for the different left and right motors
+/**
+  * @brief Gets instance of localization module
+  *
+  * @return Localization module pointer
+  */
 loc_mod* loc_mod::get_instance()
 {
+  // Check if localization module is instantiated
   if(loc_mod_ptr == nullptr)
   {
+    // Create new instance of localization module
     loc_mod_ptr = new loc_mod();
   }
 
   return loc_mod_ptr;
 }
 
-// This resets the pointer to a null pointer to keep from breaking things
+/**
+  * @brief Deallocates memory used for localization module
+  */
 void loc_mod::clean_up()
 {
+  // Check if localization module is instantiated
   if(loc_mod_ptr == nullptr)
   {
+    // End cleanup if no localization mdoule exists
     return;
   }
+
+  // Delete localization module instance
   delete loc_mod_ptr;
+
+  // Set localization module pointer to null pointer
   loc_mod_ptr = nullptr;
 }
 
@@ -84,7 +113,7 @@ void loc_mod::update_wheel_pos()
   */
 void loc_mod::update_wheel_vels()
 {
-  left_vel = get_left_wheel_vel() - 2.5;
+  left_vel = get_left_wheel_vel();
   right_vel = get_right_wheel_vel();
 }
 

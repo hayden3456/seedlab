@@ -1,8 +1,8 @@
 /**
   * @file control_module.h
-  * @author Luca Ciancanelli
+  * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
   *
-  * @brief Header file for the control module
+  * @brief Header file for the localization module
   */
 
 #ifndef control_module_h
@@ -52,4 +52,5 @@ class cont_mod
     float get_left_desired_pos();
     float get_right_desired_pos();
 };
+
 #endif

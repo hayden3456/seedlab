@@ -2,11 +2,8 @@
   * @file main.ino
   * @author Luca Ciancanelli, David Bowling and Tyler Sidlow
   *
-  * @brief Main arduino file for running the mini project
+  * @brief Main arduino file for running firmware
   */
-
-#include <Encoder.h>
-
 #include "defs.h"
 #include "localization_module.h"
 #include "control_module.h"
@@ -45,9 +42,6 @@ void setup() {
 
   // Enable motor controller
   digitalWrite(MOTOR_ENABLE, 1);
-
-  //cont_mod::get_instance()->set_left_desired_pos(6.28);
-  //cont_mod::get_instance()->set_right_desired_pos(6.28);
 
   // Print "GO" if MATLAB enabled
   if(MATLAB_COM)
@@ -117,7 +111,6 @@ void loop() {
     // Update motor velocities (velocity controller)
     cont_mod::get_instance()->update_motor_pwms();
     
-
     // Set motor pwm
     set_motor_vel(cont_mod::get_instance()->get_left_pwm(), LEFT_MOTOR_DIRECTION, LEFT_MOTOR_SPEED);
     set_motor_vel(cont_mod::get_instance()->get_right_pwm(), RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_SPEED);
