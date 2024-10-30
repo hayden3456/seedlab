@@ -141,6 +141,14 @@ void cont_mod::update_motor_pwms()
 }
 
 /**
+  * @brief Sets mode of operation (true - find arco marker, false - move based on PI commands)
+  */
+void cont_mod::set_operation_mode(int mode)
+{
+  operation_mode = mode;
+}
+
+/**
   * @brief Sets left wheel desired position (rad)
   */
 void cont_mod::set_left_desired_pos(float pos)
@@ -170,6 +178,16 @@ void cont_mod::set_left_desired_vel(float vel)
 void cont_mod::set_right_desired_vel(float vel)
 {
   right_desired_vel = vel;
+}
+
+/**
+  * @brief Gets operation mode
+  *
+  * @return Operation mode (bool)
+  */
+int cont_mod::get_operation_mode()
+{
+  return operation_mode;
 }
 
 /**

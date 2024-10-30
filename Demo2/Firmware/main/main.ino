@@ -15,7 +15,8 @@
 // Control
 void set_motor_vel(int pwm, int dir_pin, int speed_pin);
 
-void receiveEvent(int bytesReceived);
+// Communication
+void receive_cmd(int bytes_received);
 
 // Variables
 // Scheduler
@@ -23,32 +24,19 @@ long comm_mod_service_time = 0;
 long loc_mod_service_time = 0;
 long cont_mod_service_time = 0;
 
-// Control
-float desired_rotation_angle = 0;
-float desired_forward_distance = 0;
-
-long time_stopped = 0;
-
-bool rotation_complete = false;
-bool rotation_written = false;
-bool forward_written = false;
-
 //Communication
-long console_service_time = 0;
+uint8_t cmd_arr[CMD_PACKET_SIZE] = {SEARCH_MODE,0};
+int cmd_arr_index = 0;
 
-volatile uint8_t offset = 0;
-
-int cmd_arr[2];
-int new_cmd = 0;
-int count = 0;
+bool new_cmd = false;
 
 void setup() {
   // Initialize serial port
   Serial.begin(BAUD_RATE);
   
   // Initizlize i2c communication
-  Wire.begin(0x08);
-  Wire.onReceive(receiveEvent);
+  Wire.begin(ARDUINO_ADDRESS);
+  Wire.onReceive(receive_cmd);
  
   // Configure pin modes
   pinMode(MOTOR_ENABLE, OUTPUT);
@@ -71,36 +59,29 @@ void loop() {
   // Update current time
   long current_time = millis();
 
-  // Write rotation command
-  if(!rotation_complete && !rotation_written)
-  {
-    // Write wheel positions
-    cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (desired_rotation_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
-    cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (desired_rotation_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
-
-    // Set rotation flag
-    rotation_written = true;
-  }
-
-  // Write forward command (once rotation complete)
-  if(rotation_complete && !forward_written)
-  {
-    // Write wheel positions
-    cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (desired_forward_distance * FEET_TO_CM) / (WHEEL_RADIUS));
-    cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (desired_forward_distance * FEET_TO_CM) / (WHEEL_RADIUS));
-
-    // Set forward flag
-    forward_written = true;
-  }
-
-  // Console event (check if service time elapsed)
+  // Communication module update event (check if service time elapsed)
   if(current_time >= (comm_mod_service_time + CONSOLE_REF))
   {
     // Reset service time
     comm_mod_service_time = current_time;
 
+    // Check if new command recieved from PI
+    if(new_cmd)
+    {
+      // Reset new command flag
+      new_cmd = false;
+
+      // Print recieved bytes (TESTING ONLY)
+      Serial.print(cmd_arr[0]);
+      Serial.print(" ");
+      Serial.println(cmd_arr[1]);
+
+      // Write commanded operation mode to control module
+      cont_mod::get_instance()->set_operation_mode(cmd_arr[0]);
+    }
+
     // Print wheel params to console
-    comm_mod::get_instance()->print_params(comm_mod_service_time);
+    //comm_mod::get_instance()->print_params(comm_mod_service_time);
   }
 
   // Localization module update event (check if service time elapsed)
@@ -122,6 +103,26 @@ void loop() {
     // Reset service time
     cont_mod_service_time = current_time;
 
+    // Check operation mode
+    if(cont_mod::get_instance()->get_operation_mode() == SEARCH_MODE)
+    {
+      // Write wheel positions to rotate continously at set rotation speed
+      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + ROTATION_SPEED);
+      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - ROTATION_SPEED);
+    }
+    else if(cont_mod::get_instance()->get_operation_mode() == ANGLE_MODE)
+    {
+      // Write wheel positions to rotate to commanded angle
+      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (cmd_arr[1] * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (cmd_arr[1] * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+    }
+    else if(cont_mod::get_instance()->get_operation_mode() == DISTANCE_MODE)
+    {
+      // Write wheel positions to move to commanded distance
+      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (cmd_arr[1] * FEET_TO_CM) / (WHEEL_RADIUS));
+      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (cmd_arr[1] * FEET_TO_CM) / (WHEEL_RADIUS));
+    }
+
     // Update desired velocity (position controller)
     cont_mod::get_instance()->update_desired_vels();
 
@@ -131,25 +132,6 @@ void loop() {
     // Set motor pwm
     set_motor_vel(cont_mod::get_instance()->get_left_pwm(), LEFT_MOTOR_DIRECTION, LEFT_MOTOR_SPEED);
     set_motor_vel(cont_mod::get_instance()->get_right_pwm(), RIGHT_MOTOR_DIRECTION, RIGHT_MOTOR_SPEED);
-
-    // Check if wheels are stopped
-    if(loc_mod::get_instance()->get_left_wheel_vel() < 0.01 && loc_mod::get_instance()->get_right_wheel_vel() < 0.01)
-    {
-      // Increment time stopped
-      time_stopped += CONTROL_UPDATE_PERIOD;
-    }
-    else
-    {
-      // Reset time stopped
-      time_stopped = 0;
-    }
-  }
-
-  // Check if time stopped elapsed waiting time (indicates rotation complete)
-  if(time_stopped > WAIT_TIME && !rotation_complete)
-  {
-    // Set rotation complete flag
-    rotation_complete = true;
   }
 }
 
@@ -178,29 +160,35 @@ void set_motor_vel(int pwm, int dir_pin, int speed_pin)
 }
 
 /**
-  * @brief i2c communication ISR
+  * @brief I2C communication ISR
   *
-  * @param bytesRecieved is a variable for the information in
+  * @param bytes_received number of bytes recieved over I2C
   */
-void receiveEvent(int bytesReceived) {
-  offset = Wire.read();
-
-  // Loop through all received bytes
-  while (Wire.available()) 
+void receive_cmd(int bytes_received) {
+  // Check that expected number of bytes recieved
+  if(bytes_received != CMD_PACKET_SIZE)
   {
-     // Read each byte
-    int x = Wire.read();
-
-    // Write byte to command array
-    cmd_arr[count++] = x;
-
-    // Reset count
-    if (count >= 2)
-    {
-      count = 0;
-    } 
+    // Print packet size error to console
+    Serial.println("ERROR: Malformed packet");
+    Serial.print("Bytes Received: ");
+    Serial.println(bytes_received);
+    
+    // Exit ISR
+    return;
   }
 
-  // Set new command flag
-  new_cmd = 1;
+  // Ignore first byte (no information)
+  Wire.read();
+
+  // Write byte to command array
+  cmd_arr[cmd_arr_index++] = Wire.read();
+
+  if(cmd_arr_index >= 2)
+  {
+    // Reset cmd_arr_index
+    cmd_arr_index = 0;
+
+    // Set new command flag
+    new_cmd = true;
+  }
 }

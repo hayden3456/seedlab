@@ -24,20 +24,31 @@
 #define CONTROL_UPDATE_PERIOD 40
 
 // Communication defines
+// I2C parameters
+#define ARDUINO_ADDRESS 0x08
+#define CMD_PACKET_SIZE 2
+
+#define SEARCH_MODE 1
+#define ANGLE_MODE 2
+#define DISTANCE_MODE 3
+
 // Console parameters
 #define BAUD_RATE 115200
 
-#define MATLAB_COM true
+#define MATLAB_COM false
 #define MATLAB_TIME 15000
 
-#define LEFT_MOTOR_PRINT true
-#define RIGHT_MOTOR_PRINT true
-#define POSITION_PRINT true
-#define VELOCITY_PRINT true
+#define LEFT_MOTOR_PRINT false
+#define RIGHT_MOTOR_PRINT false
+#define POSITION_PRINT false
+#define VELOCITY_PRINT false
 #define PWM_PRINT false
 #define DESIRED_POSITION_PRINT false
 
 // Control defines
+// Operation mode
+#define ROTATION_SPEED 1
+
 // Velocity controller
 #define KP_VEL_LEFT 4
 #define KP_VEL_RIGHT 4

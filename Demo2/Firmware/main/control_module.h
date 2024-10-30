@@ -15,6 +15,8 @@ class cont_mod
   private:
     static cont_mod* cont_mod_ptr;
 
+    int operation_mode = 0;
+
     int left_motor_pwm = 0;
     int right_motor_pwm = 0;
     float left_motor_comp = 1;
@@ -42,11 +44,13 @@ class cont_mod
     void update_desired_vels();
     void update_motor_pwms();
 
+    void set_operation_mode(int mode);
     void set_left_desired_pos(float pos);
     void set_right_desired_pos(float pos);
     void set_left_desired_vel(float vel);
     void set_right_desired_vel(float vel);
     
+    int get_operation_mode();
     int get_left_pwm();
     int get_right_pwm();
     float get_left_desired_pos();
