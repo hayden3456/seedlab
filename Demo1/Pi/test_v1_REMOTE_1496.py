@@ -4,8 +4,6 @@ import numpy as np
 from time import sleep
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 import board
-
-
 import threading
 import queue
 
@@ -19,7 +17,6 @@ def read_camera_parameters(filename):
 
 def rotation_vector_to_euler_angles(tvec):
     tvec_array = tvec.tolist()
-    
     z = tvec_array[0][2] #z vector
     x = -tvec_array[0][0] #x vector
     
@@ -59,18 +56,13 @@ myThread.start() #start threading
 while(True):
     ret,frame = camera.read() # Take an image
     sleep(.001) # wait for image to stabilize
-te>>>>>>> refs/remotes/origin/main
     
     if not ret:
         break
     
     frame_copy = frame.copy()
     
-
-
-
-corners, ids, _ = aruco.detectMarkers(frame, dictionary) # Detect  markers
-
+    corners, ids, _ = aruco.detectMarkers(frame, dictionary) # Detect  markers
 
     if ids is not None:
         aruco.drawDetectedMarkers(frame_copy, corners, ids) # Draw detected markers
@@ -78,27 +70,7 @@ corners, ids, _ = aruco.detectMarkers(frame, dictionary) # Detect  markers
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(corners, markerLength, camera_matrix, dist_coeffs) # Estimate position of marker
 
         for i in range(len(ids)):
-
-
-
-
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-           cv2.drawFrameAxes(frame_copy, camera_matrix, dist_coeffs, rvecs[i], tvecs[i], 0.1) # Draw axis for each marker
+            cv2.drawFrameAxes(frame_copy, camera_matrix, dist_coeffs, rvecs[i], tvecs[i], 0.1) # Draw axis for each marker
 
             euler_angles = rotation_vector_to_euler_angles(tvecs[i])
             q.put(euler_angles)
@@ -114,5 +86,4 @@ corners, ids, _ = aruco.detectMarkers(frame, dictionary) # Detect  markers
 camera.release()
 cv2.destroyAllWindows()
 lcd.clear()
-
 
