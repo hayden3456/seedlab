@@ -60,7 +60,7 @@ while input_video.isOpened():
             tx = tvecs[i][0][0]
             ty = tvecs[i][0][1]
             tz = tvecs[i][0][2]
-            horizontal_angle = np.degrees(np.arctan2(tx, tz))
+            horizontal_angle = np.degrees(np.arctan2(-tx, tz))
             
             # Print the yaw (Y-axis rotation) and horizontal angle in degrees
             print(f"Marker ID {ids[i][0]}: Yaw (Y-axis rotation) = {yaw:.2f} degrees, "
