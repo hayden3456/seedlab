@@ -9,9 +9,14 @@
 #include "control_module.h"
 #include "communication_module.h"
 
+#include <Encoder.h>
+#include <Wire.h>
+
 // Functions
 // Control
 void set_motor_vel(int pwm, int dir_pin, int speed_pin);
+
+void receiveEvent(int bytesReceived);
 
 // Variables
 // Scheduler
@@ -29,10 +34,23 @@ bool rotation_complete = false;
 bool rotation_written = false;
 bool forward_written = false;
 
+//Communication
+long console_service_time = 0;
+
+volatile uint8_t offset = 0;
+
+int cmd_arr[2];
+int new_cmd = 0;
+int count = 0;
+
 void setup() {
   // Initialize serial port
   Serial.begin(BAUD_RATE);
-
+  
+  // Initizlize i2c communication
+  Wire.begin(0x08);
+  Wire.onReceive(receiveEvent);
+ 
   // Configure pin modes
   pinMode(MOTOR_ENABLE, OUTPUT);
   pinMode(LEFT_MOTOR_DIRECTION, OUTPUT);
@@ -158,4 +176,32 @@ void set_motor_vel(int pwm, int dir_pin, int speed_pin)
     digitalWrite(dir_pin, 0);
     analogWrite(speed_pin, abs(pwm));
   }
+}
+
+/**
+  * @brief i2c communication ISR
+  *
+  * @param bytesRecieved is a variable for the information in
+  */
+void receiveEvent(int bytesReceived) {
+  offset = Wire.read();
+
+  // Loop through all received bytes
+  while (Wire.available()) 
+  {
+     // Read each byte
+    int x = Wire.read();
+
+    // Write byte to command array
+    cmd_arr[count++] = x;
+
+    // Reset count
+    if (count >= 2)
+    {
+      count = 0;
+    } 
+  }
+
+  // Set new command flag
+  new_cmd = 1;
 }
