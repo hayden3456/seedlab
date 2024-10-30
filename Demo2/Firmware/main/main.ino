@@ -9,7 +9,6 @@
 #include "control_module.h"
 #include "communication_module.h"
 
-#include <Encoder.h>
 #include <Wire.h>
 
 // Functions
