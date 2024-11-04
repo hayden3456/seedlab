@@ -25,7 +25,7 @@ long loc_mod_service_time = 0;
 long cont_mod_service_time = 0;
 
 //Communication
-uint8_t cmd_arr[CMD_PACKET_SIZE] = {SEARCH_MODE,0};
+int8_t cmd_arr[CMD_PACKET_SIZE] = {SEARCH_MODE,0};
 int cmd_arr_index = 0;
 
 bool new_cmd = false;
@@ -180,10 +180,13 @@ void receive_cmd(int bytes_received) {
   // Ignore first byte (no information)
   Wire.read();
 
-  // Write byte to command array
+  // Write bytes to command array
+  cmd_arr[cmd_arr_index++] = Wire.read();
   cmd_arr[cmd_arr_index++] = Wire.read();
 
-  if(cmd_arr_index >= 2)
+  float z = cmd_arr[2] * pow(10, log10(-2)+1) + cmd_arr[1];
+
+  if(cmd_arr_index >= 3)
   {
     // Reset cmd_arr_index
     cmd_arr_index = 0;

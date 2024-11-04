@@ -26,7 +26,7 @@
 // Communication defines
 // I2C parameters
 #define ARDUINO_ADDRESS 0x08
-#define CMD_PACKET_SIZE 2
+#define CMD_PACKET_SIZE 3
 
 #define SEARCH_MODE 1
 #define ANGLE_MODE 2
