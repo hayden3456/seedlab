@@ -31,6 +31,7 @@
 #define SEARCH_MODE 1
 #define ANGLE_MODE 2
 #define DISTANCE_MODE 3
+#define STOP_MODE 4
 
 // Console parameters
 #define BAUD_RATE 115200
