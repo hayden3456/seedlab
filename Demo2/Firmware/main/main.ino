@@ -133,6 +133,14 @@ void loop() {
       cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (distance * FEET_TO_CM) / (WHEEL_RADIUS));
     }
 
+     
+    else if(cont_mod::get_instance()->get_operation_mode() == STOP_MODE) 
+    {
+      cont_mod::get_instance()->set_left_desired_pos(0);
+      cont_mod::get_instance()->set_right_desired_pos(0);
+    }
+
+
     // Update desired velocity (position controller)
     cont_mod::get_instance()->update_desired_vels();
 
