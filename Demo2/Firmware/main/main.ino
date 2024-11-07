@@ -28,6 +28,8 @@ long cont_mod_service_time = 0;
 int cmd_arr[CMD_PACKET_SIZE] = {SEARCH_MODE,0};
 int cmd_arr_index = 0;
 
+bool turn_flag = 0;
+bool rotation_complete;
 bool new_cmd = false;
 
 void setup() {
@@ -105,6 +107,7 @@ void loop() {
       cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + ROTATION_SPEED);
       cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - ROTATION_SPEED);
     }
+
     else if(cont_mod::get_instance()->get_operation_mode() == ANGLE_MODE)
     {    
       // Format distance from 2 uint8s to a float
@@ -123,6 +126,7 @@ void loop() {
       cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
       cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
     }
+
     else if(cont_mod::get_instance()->get_operation_mode() == DISTANCE_MODE)
     {
       // Format distance from 2 uint8s to a float
@@ -136,8 +140,35 @@ void loop() {
      
     else if(cont_mod::get_instance()->get_operation_mode() == STOP_MODE) 
     {
-      cont_mod::get_instance()->set_left_desired_pos(0);
-      cont_mod::get_instance()->set_right_desired_pos(0);
+      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos());
+      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos());
+    }
+
+    else if(cont_mod::get_instance()->get_operation_mode() == TURN_MODE) 
+    {
+      // Format distance from 2 uint8s to a float
+      float turn_angle;
+      
+      if(cmd_arr[1] > 127)
+      {
+        turn_angle = (cmd_arr[1] - 257) + (1 - float(cmd_arr[2]) / 100);
+      }
+      else
+      {
+        turn_angle = (cmd_arr[1]) + (float(cmd_arr[2]) / 100);
+      }
+
+      // Write wheel positions to rotate to commanded angle
+      if(!turn_flag)
+      {
+        // Write wheel positions
+        cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (turn_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+        cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (turn_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+
+        // Set rotation flag
+        turn_flag = true;
+      }
+
     }
 
 

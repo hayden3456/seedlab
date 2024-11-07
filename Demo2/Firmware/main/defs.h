@@ -32,6 +32,7 @@
 #define ANGLE_MODE 2
 #define DISTANCE_MODE 3
 #define STOP_MODE 4
+#define TURN_MODE 5
 
 // Console parameters
 #define BAUD_RATE 115200
