@@ -75,6 +75,13 @@ void loop() {
 
       // Write commanded operation mode to control module
       cont_mod::get_instance()->set_operation_mode(cmd_arr[0]);
+
+      Serial.print(cmd_arr[0]);
+      Serial.print(" ");
+      Serial.print(cmd_arr[1]);
+      Serial.print(" ");
+      Serial.print(cmd_arr[2]);
+      Serial.println();
     }
 
     // Print wheel params to console

@@ -49,7 +49,7 @@
 
 // Control defines
 // Operation mode
-#define ROTATION_SPEED 1
+#define ROTATION_SPEED 2
 
 // Velocity controller
 #define KP_VEL_LEFT 4
@@ -59,12 +59,12 @@
 #define OUTPUT_CAP_RIGHT 117
 
 // Position controller
-#define KP_POS_LEFT 0.65
-#define KI_POS_LEFT 0.01
-#define KP_POS_RIGHT 0.65
-#define KI_POS_RIGHT 0.01
+#define KP_POS_LEFT 1
+#define KI_POS_LEFT 0.02
+#define KP_POS_RIGHT 1
+#define KI_POS_RIGHT 0.02
 
-#define ANTI_WINDUP 0.25
+#define ANTI_WINDUP 0.5
 
 // Movement controller
 #define WAIT_TIME 2000
