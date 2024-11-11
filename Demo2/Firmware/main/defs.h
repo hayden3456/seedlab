@@ -26,13 +26,12 @@
 // Communication defines
 // I2C parameters
 #define ARDUINO_ADDRESS 0x08
-#define CMD_PACKET_SIZE 3
+#define CMD_PACKET_SIZE 6
+#define NEW_COMMAND_CODE 101
 
-#define SEARCH_MODE 1
-#define ANGLE_MODE 2
-#define DISTANCE_MODE 3
-#define STOP_MODE 4
-#define TURN_MODE 5
+#define MOVE_MODE 1
+#define STOP_MODE 2
+
 
 // Console parameters
 #define BAUD_RATE 115200

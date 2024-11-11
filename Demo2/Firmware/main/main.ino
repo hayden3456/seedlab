@@ -25,12 +25,11 @@ long loc_mod_service_time = 0;
 long cont_mod_service_time = 0;
 
 //Communication
-int cmd_arr[CMD_PACKET_SIZE] = {SEARCH_MODE,0};
+int cmd_arr[CMD_PACKET_SIZE];
 int cmd_arr_index = 0;
 
-bool turn_flag = 0;
-bool rotation_complete;
 bool new_cmd = false;
+bool cmd_written = false;
 
 void setup() {
   // Initialize serial port
@@ -49,6 +48,8 @@ void setup() {
 
   // Enable motor controller
   digitalWrite(MOTOR_ENABLE, 1);
+
+  Serial.println("START");
 
   // Print "GO" if MATLAB enabled
   if(MATLAB_COM)
@@ -76,12 +77,18 @@ void loop() {
       // Write commanded operation mode to control module
       cont_mod::get_instance()->set_operation_mode(cmd_arr[0]);
 
-      Serial.print(cmd_arr[0]);
-      Serial.print(" ");
-      Serial.print(cmd_arr[1]);
-      Serial.print(" ");
-      Serial.print(cmd_arr[2]);
-      Serial.println();
+      // Serial.print(cmd_arr[0]);
+      // Serial.print(" ");
+      // Serial.print(cmd_arr[1]);
+      // Serial.print(" ");
+      // Serial.print(cmd_arr[2]);
+      // Serial.print(" ");
+      // Serial.print(cmd_arr[3]);
+      // Serial.print(" ");
+      // Serial.print(cmd_arr[4]);
+      // Serial.print(" ");
+      // Serial.print(cmd_arr[5]);
+      // Serial.println();
     }
 
     // Print wheel params to console
@@ -108,76 +115,57 @@ void loop() {
     cont_mod_service_time = current_time;
 
     // Check operation mode
-    if(cont_mod::get_instance()->get_operation_mode() == SEARCH_MODE)
+    if(cont_mod::get_instance()->get_operation_mode() == MOVE_MODE && !cmd_written)
     {
-      // Write wheel positions to rotate continously at set rotation speed
-      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + ROTATION_SPEED);
-      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - ROTATION_SPEED);
-    }
-
-    else if(cont_mod::get_instance()->get_operation_mode() == ANGLE_MODE)
-    {    
-      // Format distance from 2 uint8s to a float
+      // Format distance and angle from 2 uint8s to a float
       float angle;
+      float distance = (cmd_arr[1]) + (float(cmd_arr[2]) / 100);
       
-      if(cmd_arr[1] > 127)
+      if(cmd_arr[5] == 0)
       {
-        angle = (cmd_arr[1] - 257) + (1 - float(cmd_arr[2]) / 100);
+        angle = (cmd_arr[3]) + (float(cmd_arr[4]) / 100);
       }
       else
       {
-        angle = (cmd_arr[1]) + (float(cmd_arr[2]) / 100);
+        angle = -(cmd_arr[3]) + (float(cmd_arr[4]) / 100);
       }
 
-      // Write wheel positions to rotate to commanded angle
-      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
-      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+      Serial.print(cmd_arr[5]);
+      Serial.print(" ");
+      Serial.print(angle);
+      Serial.print(" ");
+      Serial.println(distance);
+
+      // Write wheel positions to rotate to commanded distance and angle
+      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (distance * FEET_TO_CM) / (WHEEL_RADIUS) + (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (distance * FEET_TO_CM) / (WHEEL_RADIUS) - (angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+
+      // Set command written flag
+      cmd_written = true;
     }
-
-    else if(cont_mod::get_instance()->get_operation_mode() == DISTANCE_MODE)
+    else if(cont_mod::get_instance()->get_operation_mode() == STOP_MODE && !cmd_written) 
     {
-      // Format distance from 2 uint8s to a float
-      float distance = (cmd_arr[1]) + (float(cmd_arr[2]) / 100);
-
-      // Write wheel positions to move to commanded distance
-      cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (distance * FEET_TO_CM) / (WHEEL_RADIUS));
-      cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (distance * FEET_TO_CM) / (WHEEL_RADIUS));
-    }
-
-     
-    else if(cont_mod::get_instance()->get_operation_mode() == STOP_MODE) 
-    {
+      // Write wheel positions to current position to stop 
       cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos());
       cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos());
+
+      // Set command written flag
+      cmd_written = true;
     }
-
-    else if(cont_mod::get_instance()->get_operation_mode() == TURN_MODE) 
-    {
-      // Format distance from 2 uint8s to a float
-      float turn_angle;
-      
-      if(cmd_arr[1] > 127)
-      {
-        turn_angle = (cmd_arr[1] - 257) + (1 - float(cmd_arr[2]) / 100);
-      }
-      else
-      {
-        turn_angle = (cmd_arr[1]) + (float(cmd_arr[2]) / 100);
-      }
-
-      // Write wheel positions to rotate to commanded angle
-      if(!turn_flag)
-      {
-        // Write wheel positions
-        cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (turn_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
-        cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (turn_angle * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
-
-        // Set rotation flag
-        turn_flag = true;
-      }
-
-    }
-
+    // else if(cont_mod::get_instance()->get_operation_mode() == TURN_LEFT && !cmd_written) 
+    // {
+    //   Serial.println("test");
+    //   cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() + (90 * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+    //   cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() - (90 * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+    //   cmd_written = true;
+    // }
+    // else if(cont_mod::get_instance()->get_operation_mode() == TURN_RIGHT && !cmd_written) 
+    // {
+    //   Serial.println("test");
+    //   cont_mod::get_instance()->set_left_desired_pos(loc_mod::get_instance()->get_left_wheel_pos() - (90 * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+    //   cont_mod::get_instance()->set_right_desired_pos(loc_mod::get_instance()->get_right_wheel_pos() + (90 * DEG_TO_RAD * WHEEL_WIDTH) / (2 * WHEEL_RADIUS));
+    //   cmd_written = true;
+    // }
 
     // Update desired velocity (position controller)
     cont_mod::get_instance()->update_desired_vels();
@@ -224,15 +212,16 @@ void receive_cmd(int bytes_received) {
   // Ignore first byte (no information)
   Wire.read();
 
-  // Write bytes to command array
-  cmd_arr[cmd_arr_index++] = Wire.read();
-
-  if(cmd_arr_index >= CMD_PACKET_SIZE)
+  for(uint8_t i = 0; i < CMD_PACKET_SIZE; i++)
   {
-    // Reset cmd_arr_index
-    cmd_arr_index = 0;
-
-    // Set new command flag
-    new_cmd = true;
+    cmd_arr[i] = Wire.read();
   }
+
+  // Set new command flag
+  new_cmd = true;
+
+  // Reset command written
+  cmd_written = false;
+
+  return;
 }
