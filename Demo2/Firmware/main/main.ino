@@ -108,12 +108,19 @@ void loop() {
     loc_mod::get_instance()->update_wheel_vels();
   }
 
+
+ 
   // Control module update event (check if service time elapsed)
   if(current_time >= (cont_mod_service_time + CONTROL_UPDATE_PERIOD))
   {
     // Reset service time
     cont_mod_service_time = current_time;
 
+    if(cmd_arr[0]!=1 && cmd_arr[0]!=2){
+    }
+    else if(cmd_arr[5]!=0 && cmd_arr[5]!=1){
+    }
+    else{
     // Check operation mode
     if(cont_mod::get_instance()->get_operation_mode() == MOVE_MODE && !cmd_written)
     {
@@ -151,6 +158,7 @@ void loop() {
 
       // Set command written flag
       cmd_written = true;
+    }
     }
     // else if(cont_mod::get_instance()->get_operation_mode() == TURN_LEFT && !cmd_written) 
     // {
